@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/auth_header.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/custom_button.dart';
+import '../providers/auth_provider.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -29,21 +30,28 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    final success = await ref.read(authNotifierProvider.notifier).login(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
 
-    // TODO: call your AuthProvider / LoginUser usecase here, e.g.:
-    // final result = await ref.read(authProvider.notifier).login(
-    //   _emailController.text.trim(),
-    //   _passwordController.text,
-    // );
-
-    await Future.delayed(const Duration(seconds: 1)); // placeholder
     if (!mounted) return;
-    setState(() => _isLoading = false);
+
+    if (success) {
+      // TODO: navigate to Home once it exists:
+      // Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      final error = ref.read(authNotifierProvider).errorMessage ?? 'Login failed';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: AppColors.error),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authNotifierProvider).isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
@@ -67,8 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Email is required';
+                        if (value == null || value.isEmpty) return 'Email is required';
                         if (!value.contains('@')) return 'Enter a valid email';
                         return null;
                       },
@@ -80,8 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passwordController,
                       obscureText: true,
                       validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Password is required';
+                        if (value == null || value.isEmpty) return 'Password is required';
                         if (value.length < 6) return 'Minimum 6 characters';
                         return null;
                       },
@@ -89,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 36),
                     CustomButton(
                       label: 'Login',
-                      isLoading: _isLoading,
+                      isLoading: isLoading,
                       onPressed: _handleLogin,
                     ),
                     const SizedBox(height: 20),

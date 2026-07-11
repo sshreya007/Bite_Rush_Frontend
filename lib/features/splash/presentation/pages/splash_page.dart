@@ -21,8 +21,6 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _navigateNext() async {
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-
-    // TODO: replace with your actual route (Welcome or Login)
     Navigator.pushReplacementNamed(context, '/login');
   }
 
