@@ -1,0 +1,52 @@
+name: bite_rush
+description: "Bite Rush - Food Delivery App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Networking
+  dio: ^5.4.3+1
+
+  # Local storage (JWT token, cached user)
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.2.3
+
+  # Functional error handling (Either type)
+  dartz: ^0.10.1
+
+  # Value equality for entities/models
+  equatable: ^2.0.5
+
+  # UI helpers
+  google_fonts: ^6.2.1
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.10+1
+
+  # Utilities
+  intl: ^0.19.0
+  connectivity_plus: ^6.0.3
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  # Code generation for JSON models (optional but recommended)
+  build_runner: ^2.4.9
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
