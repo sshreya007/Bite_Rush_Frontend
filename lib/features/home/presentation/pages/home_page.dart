@@ -1,31 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
 import '../../../../core/widgets/app_bottom_nav_bar.dart';
+import '../../../categories/presentation/providers/category_provider.dart';
+import '../../../categories/presentation/pages/category_items_page.dart';
+import '../../../restaurant_details/presentation/providers/restaurant_provider.dart';
+import '../../../restaurant_details/presentation/pages/restaurants_list_page.dart';
+import '../../../restaurant_details/presentation/pages/restaurant_menu_page.dart';
 import '../widgets/home_filter_tabs.dart';
 import '../widgets/section_header.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   String _selectedFilter = 'All';
   int _navIndex = 0;
 
   void _onNavTap(int index) {
     setState(() => _navIndex = index);
-    // TODO: navigate to the matching screen once built, e.g.:
-    // if (index == 1) Navigator.pushNamed(context, '/orders');
-    // if (index == 2) Navigator.pushNamed(context, '/cart');
-    // if (index == 3) Navigator.pushNamed(context, '/profile');
+    if (index == 1) {
+      // "Menu" tab -> Restaurants list, as requested.
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage()))
+          .then((_) => setState(() => _navIndex = 0));
+    }
+    // TODO: index == 2 -> Cart, index == 3 -> Profile, once built.
   }
 
   @override
   Widget build(BuildContext context) {
+    final categoriesAsync = ref.watch(categoriesListProvider);
+    final restaurantsAsync = ref.watch(restaurantsListProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -35,8 +46,6 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              // Top bar — swap for a real greeting/location once you
-              // have user + address data wired in.
               const Text(
                 'Home',
                 style: TextStyle(fontSize: 12, color: AppColors.hintText),
@@ -56,30 +65,135 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 28),
 
-              // --- Offers section (placeholder) ---
+              // --- Offers section (still placeholder — no Offer model yet) ---
               SectionHeader(title: 'Offers', onViewAll: () {}),
               const SizedBox(height: 12),
               _PlaceholderBlock(height: 140),
               const SizedBox(height: 28),
 
-              // --- Categories section (placeholder) ---
+              // --- Categories section (real data) ---
               SectionHeader(title: 'Categories', onViewAll: () {}),
               const SizedBox(height: 12),
               SizedBox(
                 height: 100,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  separatorBuilder: (_, __) => const SizedBox(width: 16),
-                  itemBuilder: (_, __) => const _PlaceholderCircle(),
+                child: categoriesAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primaryOrange)),
+                  error: (error, _) => Center(child: Text('Failed to load: $error', style: const TextStyle(fontSize: 12))),
+                  data: (categories) {
+                    if (categories.isEmpty) return const Center(child: Text('No categories yet'));
+                    return ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: categories.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 16),
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CategoryItemsPage(
+                                  categoryId: category.id,
+                                  categoryName: category.name,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(35),
+                                child: Image.network(
+                                  category.image,
+                                  width: 70,
+                                  height: 70,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 70,
+                                    height: 70,
+                                    decoration: BoxDecoration(color: Colors.grey.shade200, shape: BoxShape.circle),
+                                    child: const Icon(Icons.fastfood, color: Colors.grey),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(category.name, style: const TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 28),
 
-              // --- Popular restaurants section (placeholder) ---
-              SectionHeader(title: 'Popular restaurants', onViewAll: () {}),
+              // --- Popular restaurants section (real data) ---
+              SectionHeader(title: 'Popular restaurants', onViewAll: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage()));
+              }),
               const SizedBox(height: 12),
-              _PlaceholderBlock(height: 130),
+              restaurantsAsync.when(
+                loading: () => const SizedBox(
+                  height: 130,
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primaryOrange)),
+                ),
+                error: (error, _) => SizedBox(
+                  height: 130,
+                  child: Center(child: Text('Failed to load: $error', style: const TextStyle(fontSize: 12))),
+                ),
+                data: (restaurants) {
+                  if (restaurants.isEmpty) {
+                    return const SizedBox(height: 130, child: Center(child: Text('No restaurants yet')));
+                  }
+                  final featured = restaurants.first;
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => RestaurantMenuPage(
+                            restaurantId: featured.id,
+                            restaurantName: featured.name,
+                          ),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            featured.banner.isNotEmpty ? featured.banner : featured.image,
+                            height: 130,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(height: 130, color: Colors.grey.shade300),
+                          ),
+                          Container(
+                            height: 130,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.black.withOpacity(0.5), Colors.transparent],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: 16,
+                            bottom: 12,
+                            child: Text(
+                              featured.name,
+                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 24),
             ],
           ),
@@ -93,8 +207,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// Temporary gray block standing in for Offers/Restaurants banners
-/// until that data is wired up.
 class _PlaceholderBlock extends StatelessWidget {
   final double height;
   const _PlaceholderBlock({required this.height});
@@ -108,29 +220,6 @@ class _PlaceholderBlock extends StatelessWidget {
         color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(20),
       ),
-    );
-  }
-}
-
-/// Temporary gray circle standing in for category images.
-class _PlaceholderCircle extends StatelessWidget {
-  const _PlaceholderCircle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade200,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(width: 40, height: 10, color: Colors.grey.shade200),
-      ],
     );
   }
 }
