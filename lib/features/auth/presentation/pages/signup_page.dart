@@ -44,10 +44,12 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     if (!mounted) return;
 
     if (success) {
+      Navigator.pushReplacementNamed(context, '/login');
       // TODO: navigate to Home once it exists:
       // Navigator.pushReplacementNamed(context, '/home');
     } else {
-      final error = ref.read(authNotifierProvider).errorMessage ?? 'Signup failed';
+      final error =
+          ref.read(authNotifierProvider).errorMessage ?? 'Signup failed';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error), backgroundColor: AppColors.error),
       );
@@ -79,8 +81,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       label: 'Name',
                       hint: 'Enter name',
                       controller: _nameController,
-                      validator: (value) =>
-                          (value == null || value.isEmpty) ? 'Name is required' : null,
+                      validator: (value) => (value == null || value.isEmpty)
+                          ? 'Name is required'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
@@ -88,8 +91,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       hint: 'Enter Phone Number',
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      validator: (value) =>
-                          (value == null || value.isEmpty) ? 'Phone number is required' : null,
+                      validator: (value) => (value == null || value.isEmpty)
+                          ? 'Phone number is required'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
@@ -98,7 +102,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Email is required';
+                        if (value == null || value.isEmpty)
+                          return 'Email is required';
                         if (!value.contains('@')) return 'Enter a valid email';
                         return null;
                       },
@@ -110,7 +115,8 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       controller: _passwordController,
                       obscureText: true,
                       validator: (value) {
-                        if (value == null || value.isEmpty) return 'Password is required';
+                        if (value == null || value.isEmpty)
+                          return 'Password is required';
                         if (value.length < 6) return 'Minimum 6 characters';
                         return null;
                       },

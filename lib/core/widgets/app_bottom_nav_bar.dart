@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// The peach bottom nav bar with Home / Menu / Cart / Profile icons.
-/// Shared across every screen that shows bottom navigation, so the
-/// active-tab styling only lives in one place.
+/// The bottom nav bar with Home / Menu / Cart / Profile icons.
 ///
-/// Uses your own icon images from assets/icons/ (exported from
-/// Figma) rather than built-in Material icons, since the design
-/// uses custom flat-illustration style icons.
-///
-/// Usage: wrap your Scaffold's bottomNavigationBar with this,
-/// passing which index is currently active.
+/// Active state is shown with a raised white circle (+ subtle shadow)
+/// behind the icon plus a small dot underneath — since the icon
+/// artwork itself is multi-colored, a plain background tint wasn't
+/// visible enough to read as "selected."
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -21,8 +17,6 @@ class AppBottomNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  // Drop your exported PNG/SVG files at these exact paths, or edit
-  // the paths below to match whatever you name/place them.
   static const _iconPaths = [
     'assets/icons/nav_home.png',
     'assets/icons/nav_menu.png',
@@ -33,11 +27,18 @@ class AppBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
-      decoration: const BoxDecoration(
-        color: AppColors.headerOrange,
+      height: 78,
+      decoration: BoxDecoration(
+        color: AppColors.primaryOrange.withOpacity(0.18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(_iconPaths.length, (index) {
@@ -45,31 +46,62 @@ class AppBottomNavBar extends StatelessWidget {
           return GestureDetector(
             onTap: () => onTap(index),
             behavior: HitTestBehavior.opaque,
-            child: Container(
-              width: 48,
-              height: 48,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: isActive ? Colors.white : Colors.transparent,
+                shape: BoxShape.circle,
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
               alignment: Alignment.center,
-              child: Image.asset(
-                _iconPaths[index],
-                width: 30,
-                height: 30,
-                // Dims inactive icons slightly so the active one
-                // stands out. Remove this if your icon set already
-                // has separate active/inactive art from Figma.
-                opacity: isActive
-                    ? const AlwaysStoppedAnimation(1.0)
-                    : const AlwaysStoppedAnimation(0.55),
-                errorBuilder: (context, error, stackTrace) {
-                  // Shows a placeholder icon instead of crashing
-                  // if you haven't added the asset file yet.
-                  return Icon(
-                    Icons.circle,
-                    size: 24,
-                    color: isActive
-                        ? AppColors.primaryOrange
-                        : AppColors.logoBrown,
-                  );
-                },
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  AnimatedScale(
+                    duration: const Duration(milliseconds: 200),
+                    scale: isActive ? 1.0 : 0.85,
+                    child: Opacity(
+                      opacity: isActive ? 1.0 : 0.9,
+                      child: Image.asset(
+                        _iconPaths[index],
+                        width: 28,
+                        height: 28,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.circle,
+                            size: 22,
+                            color: isActive
+                                ? AppColors.primaryOrange
+                                : AppColors.logoBrown,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  if (isActive)
+                    Positioned(
+                      bottom: -10,
+                      child: Container(
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryOrange,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           );
