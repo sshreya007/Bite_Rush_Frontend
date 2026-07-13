@@ -16,4 +16,11 @@ class ApiConstants {
   static const String register = '/auth/register';
   static const String login = '/auth/login';
   static const String me = '/auth/me';
+
+  static const String categories = '/categories';
+  static String categoryItems(String id) => '/categories/$id/items';
+
+  static const String restaurants = '/restaurants';
+  static String restaurantById(String id) => '/restaurants/$id';
+  static String restaurantMenu(String id) => '/restaurants/$id/menu';
 }
