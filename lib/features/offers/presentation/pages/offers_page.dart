@@ -3,39 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
 import '../../../../core/widgets/filter_tabs_bar.dart';
-import '../../../../core/widgets/app_bottom_nav_bar.dart';
-import '../../../restaurant_details/presentation/pages/restaurants_list_page.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../providers/offer_provider.dart';
 
-class OffersPage extends ConsumerStatefulWidget {
+class OffersPage extends ConsumerWidget {
   const OffersPage({super.key});
 
   @override
-  ConsumerState<OffersPage> createState() => _OffersPageState();
-}
-
-class _OffersPageState extends ConsumerState<OffersPage> {
-  int _navIndex = -1; // no bottom-nav tab owns this screen directly
-
-  void _onNavTap(int index) {
-    if (index == 0) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    }
-    if (index == 1) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage()));
-      return;
-    }
-    // TODO: index == 2 -> Cart, index == 3 -> Profile, once built.
-    setState(() => _navIndex = index);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final offersAsync = ref.watch(offersListProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return AppScaffold(
+      currentIndex: -1,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -137,7 +116,6 @@ class _OffersPageState extends ConsumerState<OffersPage> {
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomNavBar(currentIndex: _navIndex, onTap: _onNavTap),
     );
   }
 }

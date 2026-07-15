@@ -3,40 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
 import '../../../../core/widgets/filter_tabs_bar.dart';
-import '../../../../core/widgets/app_bottom_nav_bar.dart';
-import '../../../restaurant_details/presentation/pages/restaurants_list_page.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../providers/category_provider.dart';
 import 'category_items_page.dart';
 
-class CategoriesPage extends ConsumerStatefulWidget {
+class CategoriesPage extends ConsumerWidget {
   const CategoriesPage({super.key});
 
   @override
-  ConsumerState<CategoriesPage> createState() => _CategoriesPageState();
-}
-
-class _CategoriesPageState extends ConsumerState<CategoriesPage> {
-  int _navIndex = -1;
-
-  void _onNavTap(int index) {
-    if (index == 0) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      return;
-    }
-    if (index == 1) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage()));
-      return;
-    }
-    // TODO: index == 2 -> Cart, index == 3 -> Profile, once built.
-    setState(() => _navIndex = index);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesListProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return AppScaffold(
+      currentIndex: -1,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -122,7 +101,6 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage> {
           ),
         ),
       ),
-      bottomNavigationBar: AppBottomNavBar(currentIndex: _navIndex, onTap: _onNavTap),
     );
   }
 }

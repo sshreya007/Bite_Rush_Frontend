@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../providers/restaurant_provider.dart';
 
 class RestaurantMenuPage extends ConsumerStatefulWidget {
@@ -24,8 +25,8 @@ class _RestaurantMenuPageState extends ConsumerState<RestaurantMenuPage> {
   Widget build(BuildContext context) {
     final menuAsync = ref.watch(restaurantMenuProvider(widget.restaurantId));
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return AppScaffold(
+      currentIndex: -1,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -41,10 +42,7 @@ class _RestaurantMenuPageState extends ConsumerState<RestaurantMenuPage> {
                 onPressed: () => Navigator.pop(context),
               ),
               const SizedBox(height: 4),
-              Text(
-                'Restaurant Menu',
-                style: const TextStyle(fontSize: 12, color: AppColors.hintText),
-              ),
+              const Text('Restaurant Menu', style: TextStyle(fontSize: 12, color: AppColors.hintText)),
               const SizedBox(height: 4),
               Text(
                 widget.restaurantName,

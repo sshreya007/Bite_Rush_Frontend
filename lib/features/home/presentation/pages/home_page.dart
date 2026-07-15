@@ -2,43 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
-import '../../../../core/widgets/app_bottom_nav_bar.dart';
+import '../../../../core/widgets/app_scaffold.dart';
+import '../../../../core/widgets/filter_tabs_bar.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../categories/presentation/pages/category_items_page.dart';
+import '../../../categories/presentation/pages/categories_page.dart';
 import '../../../restaurant_details/presentation/providers/restaurant_provider.dart';
 import '../../../restaurant_details/presentation/pages/restaurants_list_page.dart';
 import '../../../restaurant_details/presentation/pages/restaurant_menu_page.dart';
-import '../widgets/home_filter_tabs.dart';
+import '../../../offers/presentation/providers/offer_provider.dart';
+import '../../../offers/presentation/pages/offers_page.dart';
 import '../widgets/section_header.dart';
 
-class HomePage extends ConsumerStatefulWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends ConsumerState<HomePage> {
-  String _selectedFilter = 'All';
-  int _navIndex = 0;
-
-  void _onNavTap(int index) {
-    setState(() => _navIndex = index);
-    if (index == 1) {
-      // "Menu" tab -> Restaurants list, as requested.
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage()))
-          .then((_) => setState(() => _navIndex = 0));
-    }
-    // TODO: index == 2 -> Cart, index == 3 -> Profile, once built.
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesListProvider);
     final restaurantsAsync = ref.watch(restaurantsListProvider);
+    final offersAsync = ref.watch(offersListProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return AppScaffold(
+      currentIndex: 0,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -59,20 +45,90 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               const SizedBox(height: 20),
 
-              HomeFilterTabs(
-                selected: _selectedFilter,
-                onChanged: (tab) => setState(() => _selectedFilter = tab),
+              const FilterTabsBar(selected: 'All'),
+              const SizedBox(height: 28),
+
+              // --- Offers section (real data) ---
+              SectionHeader(
+                title: 'Offers',
+                onViewAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OffersPage())),
+              ),
+              const SizedBox(height: 12),
+              offersAsync.when(
+                loading: () => const SizedBox(
+                  height: 140,
+                  child: Center(child: CircularProgressIndicator(color: AppColors.primaryOrange)),
+                ),
+                error: (error, _) => SizedBox(
+                  height: 140,
+                  child: Center(child: Text('Failed to load: $error', style: const TextStyle(fontSize: 12))),
+                ),
+                data: (offers) {
+                  if (offers.isEmpty) {
+                    return const SizedBox(height: 140, child: Center(child: Text('No offers right now')));
+                  }
+                  final featured = offers.first;
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Stack(
+                      children: [
+                        Image.network(
+                          featured.image,
+                          height: 140,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(height: 140, color: Colors.grey.shade300),
+                        ),
+                        Container(
+                          height: 140,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.black.withOpacity(0.55), Colors.transparent],
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 16,
+                          bottom: 12,
+                          right: 16,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  featured.title,
+                                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              if (featured.discountPercent > 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryOrange,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'SAVE ${featured.discountPercent}%',
+                                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 28),
 
-              // --- Offers section (still placeholder — no Offer model yet) ---
-              SectionHeader(title: 'Offers', onViewAll: () {}),
-              const SizedBox(height: 12),
-              _PlaceholderBlock(height: 140),
-              const SizedBox(height: 28),
-
               // --- Categories section (real data) ---
-              SectionHeader(title: 'Categories', onViewAll: () {}),
+              SectionHeader(
+                title: 'Categories',
+                onViewAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoriesPage())),
+              ),
               const SizedBox(height: 12),
               SizedBox(
                 height: 100,
@@ -129,9 +185,10 @@ class _HomePageState extends ConsumerState<HomePage> {
               const SizedBox(height: 28),
 
               // --- Popular restaurants section (real data) ---
-              SectionHeader(title: 'Popular restaurants', onViewAll: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage()));
-              }),
+              SectionHeader(
+                title: 'Popular restaurants',
+                onViewAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage())),
+              ),
               const SizedBox(height: 12),
               restaurantsAsync.when(
                 loading: () => const SizedBox(
@@ -198,27 +255,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _navIndex,
-        onTap: _onNavTap,
-      ),
-    );
-  }
-}
-
-class _PlaceholderBlock extends StatelessWidget {
-  final double height;
-  const _PlaceholderBlock({required this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(20),
       ),
     );
   }

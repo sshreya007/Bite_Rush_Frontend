@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
+import '../../../../core/widgets/filter_tabs_bar.dart';
+import '../../../../core/widgets/app_scaffold.dart';
 import '../providers/restaurant_provider.dart';
 import 'restaurant_menu_page.dart';
 
@@ -12,8 +14,8 @@ class RestaurantsListPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final restaurantsAsync = ref.watch(restaurantsListProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return AppScaffold(
+      currentIndex: 1,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -22,12 +24,9 @@ class RestaurantsListPage extends ConsumerWidget {
             children: [
               const SizedBox(height: 8),
               const CustomSearchBar(readOnly: true),
-              const SizedBox(height: 24),
-              const Text(
-                'Restaurants',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.labelText),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              const FilterTabsBar(selected: 'Restaurants'),
+              const SizedBox(height: 20),
               Expanded(
                 child: restaurantsAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primaryOrange)),
