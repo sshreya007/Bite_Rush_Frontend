@@ -2,14 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
+import '../../../../core/widgets/filter_tabs_bar.dart';
+import '../../../../core/widgets/app_bottom_nav_bar.dart';
+import '../../../restaurant_details/presentation/pages/restaurants_list_page.dart';
 import '../providers/category_provider.dart';
 import 'category_items_page.dart';
 
-class CategoriesPage extends ConsumerWidget {
+class CategoriesPage extends ConsumerStatefulWidget {
   const CategoriesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CategoriesPage> createState() => _CategoriesPageState();
+}
+
+class _CategoriesPageState extends ConsumerState<CategoriesPage> {
+  int _navIndex = -1;
+
+  void _onNavTap(int index) {
+    if (index == 0) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
+    }
+    if (index == 1) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const RestaurantsListPage()));
+      return;
+    }
+    // TODO: index == 2 -> Cart, index == 3 -> Profile, once built.
+    setState(() => _navIndex = index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesListProvider);
 
     return Scaffold(
@@ -21,25 +44,18 @@ class CategoriesPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const CircleAvatar(
-                      backgroundColor: Color(0xFFFFC93C),
-                      child: Icon(Icons.arrow_back, color: Colors.white, size: 18),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
+              IconButton(
+                icon: const CircleAvatar(
+                  backgroundColor: Color(0xFFFFC93C),
+                  child: Icon(Icons.arrow_back, color: Colors.white, size: 18),
+                ),
+                onPressed: () => Navigator.pop(context),
               ),
               const SizedBox(height: 4),
               const CustomSearchBar(readOnly: true),
-              const SizedBox(height: 24),
-              const Text(
-                'Categories',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.labelText),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              const FilterTabsBar(selected: 'Categories'),
+              const SizedBox(height: 20),
               Expanded(
                 child: categoriesAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primaryOrange)),
@@ -106,6 +122,7 @@ class CategoriesPage extends ConsumerWidget {
           ),
         ),
       ),
+      bottomNavigationBar: AppBottomNavBar(currentIndex: _navIndex, onTap: _onNavTap),
     );
   }
 }
