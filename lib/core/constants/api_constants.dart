@@ -25,4 +25,7 @@ class ApiConstants {
   static String restaurantMenu(String id) => '/restaurants/$id/menu';
 
   static const String offers = '/offers';
+
+  static const String orders = '/orders';
+  static String orderById(String id) => '/orders/$id';
 }
