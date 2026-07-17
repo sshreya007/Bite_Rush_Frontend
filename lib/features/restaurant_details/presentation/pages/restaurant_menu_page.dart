@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_scaffold.dart';
+import '../../../food_details/presentation/pages/food_details_page.dart';
 import '../providers/restaurant_provider.dart';
 
 class RestaurantMenuPage extends ConsumerStatefulWidget {
@@ -109,8 +110,10 @@ class _RestaurantMenuPageState extends ConsumerState<RestaurantMenuPage> {
                               final item = filtered[index];
                               return GestureDetector(
                                 onTap: () {
-                                  // TODO: navigate to Food Details / Customize Order page
-                                  // once built, passing item.id.
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => FoodDetailsPage(item: item)),
+                                  );
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(12),

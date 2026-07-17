@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
 import '../../../../core/widgets/app_scaffold.dart';
+import '../../../food_details/presentation/pages/food_details_page.dart';
 import '../providers/category_provider.dart';
 
 class CategoryItemsPage extends ConsumerWidget {
@@ -56,7 +57,14 @@ class CategoryItemsPage extends ConsumerWidget {
                       separatorBuilder: (_, __) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
                         final item = items[index];
-                        return Container(
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => FoodDetailsPage(item: item)),
+                            );
+                          },
+                          child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: AppColors.headerOrange.withOpacity(0.15),
@@ -109,7 +117,8 @@ class CategoryItemsPage extends ConsumerWidget {
                               ),
                             ],
                           ),
-                        );
+                        ),
+                      );
                       },
                     );
                   },
