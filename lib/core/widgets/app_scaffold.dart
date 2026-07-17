@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'app_bottom_nav_bar.dart';
 import '../../features/restaurant_details/presentation/pages/restaurants_list_page.dart';
+import '../../features/cart/presentation/pages/cart_page.dart';
 
 /// Wraps a page's body with the app's persistent bottom nav bar and
 /// centralizes what each icon does, so individual pages don't each
@@ -43,8 +44,12 @@ class AppScaffold extends StatelessWidget {
       return;
     }
 
-    // TODO: index == 2 -> Cart page, index == 3 -> Profile page,
-    // once those screens are built. Wire them here the same way.
+    if (index == 2) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const CartPage()));
+      return;
+    }
+
+    // TODO: index == 3 -> Profile page, once built. Wire it here.
   }
 
   @override
