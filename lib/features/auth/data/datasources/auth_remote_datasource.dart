@@ -20,6 +20,8 @@ abstract class AuthRemoteDataSource {
   });
 
   Future<UserModel> getCurrentUser();
+
+  Future<UserModel> updateProfile({String? name, String? phone});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -68,6 +70,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> getCurrentUser() async {
     try {
       final response = await dio.get(ApiConstants.me);
+      return UserModel.fromJson(response.data['user']);
+    } on DioException catch (e) {
+      throw ServerException(_extractMessage(e));
+    }
+  }
+
+  @override
+  Future<UserModel> updateProfile({String? name, String? phone}) async {
+    try {
+      final response = await dio.put(
+        ApiConstants.updateProfile,
+        data: {
+          if (name != null) 'name': name,
+          if (phone != null) 'phone': phone,
+        },
+      );
       return UserModel.fromJson(response.data['user']);
     } on DioException catch (e) {
       throw ServerException(_extractMessage(e));

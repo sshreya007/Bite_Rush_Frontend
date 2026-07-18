@@ -6,6 +6,8 @@ import '../../domain/entities/order_entity.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/usecases/place_order.dart';
 import '../../domain/usecases/get_order_status.dart';
+import '../../domain/usecases/get_my_orders.dart';
+import '../../../../core/usecase/usecase.dart';
 
 final orderRemoteDataSourceProvider = Provider<OrderRemoteDataSource>((ref) {
   return OrderRemoteDataSourceImpl(ref.read(dioClientProvider));
@@ -21,6 +23,15 @@ final placeOrderProvider = Provider<PlaceOrder>((ref) {
 
 final getOrderStatusProvider = Provider<GetOrderStatus>((ref) {
   return GetOrderStatus(ref.read(orderRepositoryProvider));
+});
+
+final getMyOrdersProvider = Provider<GetMyOrders>((ref) {
+  return GetMyOrders(ref.read(orderRepositoryProvider));
+});
+
+final orderHistoryProvider = FutureProvider<List<OrderEntity>>((ref) async {
+  final result = await ref.read(getMyOrdersProvider)(const NoParams());
+  return result.fold((failure) => throw failure.message, (orders) => orders);
 });
 
 /// Tracks the current checkout submission — idle/loading/success/error,

@@ -12,6 +12,8 @@ abstract class OrderRemoteDataSource {
   });
 
   Future<OrderModel> getOrderById(String id);
+
+  Future<List<OrderModel>> getMyOrders();
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -63,5 +65,16 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       return e.response!.data['message'];
     }
     return 'Could not place order. Check your connection.';
+  }
+
+  @override
+  Future<List<OrderModel>> getMyOrders() async {
+    try {
+      final response = await dio.get(ApiConstants.orders);
+      final List list = response.data['orders'];
+      return list.map((json) => OrderModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw ServerException(_extractMessage(e));
+    }
   }
 }

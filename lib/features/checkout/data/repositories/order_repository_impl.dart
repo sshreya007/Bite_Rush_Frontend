@@ -41,4 +41,16 @@ class OrderRepositoryImpl implements OrderRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, List<OrderEntity>>> getMyOrders() async {
+    try {
+      final orders = await remoteDataSource.getMyOrders();
+      return Right(orders);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

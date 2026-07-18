@@ -71,6 +71,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> updateProfile({String? name, String? phone}) async {
+    try {
+      final user = await remoteDataSource.updateProfile(name: name, phone: phone);
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<void> logout() async {
     await tokenStorage.deleteToken();
   }

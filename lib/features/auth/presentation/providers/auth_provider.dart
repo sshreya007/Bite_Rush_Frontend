@@ -10,6 +10,9 @@ import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_user.dart';
 import '../../domain/usecases/register_user.dart';
+import '../../domain/usecases/get_current_user.dart';
+import '../../domain/usecases/update_profile.dart';
+import '../../../../core/usecase/usecase.dart';
 
 // --- Dependency injection chain ---
 
@@ -38,6 +41,24 @@ final loginUserProvider = Provider<LoginUser>((ref) {
 
 final registerUserProvider = Provider<RegisterUser>((ref) {
   return RegisterUser(ref.read(authRepositoryProvider));
+});
+
+final getCurrentUserProvider = Provider<GetCurrentUser>((ref) {
+  return GetCurrentUser(ref.read(authRepositoryProvider));
+});
+
+final updateProfileProvider = Provider<UpdateProfile>((ref) {
+  return UpdateProfile(ref.read(authRepositoryProvider));
+});
+
+/// Fetches the logged-in user's profile from the backend (via the
+/// stored JWT) rather than relying on in-memory login state — this
+/// way Profile still works correctly after a hot restart, when
+/// authNotifierProvider's state has reset but the token is still
+/// saved in secure storage.
+final currentUserProvider = FutureProvider<UserEntity>((ref) async {
+  final result = await ref.read(getCurrentUserProvider)(const NoParams());
+  return result.fold((failure) => throw failure.message, (user) => user);
 });
 
 // --- Auth state ---

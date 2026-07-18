@@ -12,6 +12,7 @@ import '../../../restaurant_details/presentation/pages/restaurants_list_page.dar
 import '../../../restaurant_details/presentation/pages/restaurant_menu_page.dart';
 import '../../../offers/presentation/providers/offer_provider.dart';
 import '../../../offers/presentation/pages/offers_page.dart';
+import '../../../search/presentation/pages/search_page.dart';
 import '../widgets/section_header.dart';
 
 class HomePage extends ConsumerWidget {
@@ -39,8 +40,9 @@ class HomePage extends ConsumerWidget {
               const SizedBox(height: 16),
 
               CustomSearchBar(
+                readOnly: true,
                 onTap: () {
-                  // TODO: Navigator.pushNamed(context, '/search');
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchPage()));
                 },
               ),
               const SizedBox(height: 20),
@@ -68,7 +70,40 @@ class HomePage extends ConsumerWidget {
                     return const SizedBox(height: 140, child: Center(child: Text('No offers right now')));
                   }
                   final featured = offers.first;
-                  return ClipRRect(
+                  return GestureDetector(
+                    onTap: () async {
+                      // If the offer has a linked restaurant, go straight
+                      // there. Otherwise (demo/fallback) just open the
+                      // first restaurant's menu so the tap isn't a dead end.
+                      if (featured.restaurantId.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RestaurantMenuPage(
+                              restaurantId: featured.restaurantId,
+                              restaurantName: featured.restaurantName.isNotEmpty
+                                  ? featured.restaurantName
+                                  : 'Restaurant',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+
+                      final restaurants = await ref.read(restaurantsListProvider.future);
+                      if (restaurants.isEmpty || !context.mounted) return;
+                      final fallback = restaurants.first;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => RestaurantMenuPage(
+                            restaurantId: fallback.id,
+                            restaurantName: fallback.name,
+                          ),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Stack(
                       children: [
@@ -119,7 +154,7 @@ class HomePage extends ConsumerWidget {
                         ),
                       ],
                     ),
-                  );
+                  ));
                 },
               ),
               const SizedBox(height: 28),

@@ -4,6 +4,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/custom_search_bar.dart';
 import '../../../../core/widgets/filter_tabs_bar.dart';
 import '../../../../core/widgets/app_scaffold.dart';
+import '../../../restaurant_details/presentation/providers/restaurant_provider.dart';
+import '../../../restaurant_details/presentation/pages/restaurant_menu_page.dart';
 import '../providers/offer_provider.dart';
 
 class OffersPage extends ConsumerWidget {
@@ -47,7 +49,37 @@ class OffersPage extends ConsumerWidget {
                       separatorBuilder: (_, __) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
                         final offer = offers[index];
-                        return ClipRRect(
+                        return GestureDetector(
+                          onTap: () async {
+                            if (offer.restaurantId.isNotEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RestaurantMenuPage(
+                                    restaurantId: offer.restaurantId,
+                                    restaurantName: offer.restaurantName.isNotEmpty
+                                        ? offer.restaurantName
+                                        : 'Restaurant',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            final restaurants = await ref.read(restaurantsListProvider.future);
+                            if (restaurants.isEmpty || !context.mounted) return;
+                            final fallback = restaurants.first;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RestaurantMenuPage(
+                                  restaurantId: fallback.id,
+                                  restaurantName: fallback.name,
+                                ),
+                              ),
+                            );
+                          },
+                          child: ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Stack(
                             children: [
@@ -106,7 +138,7 @@ class OffersPage extends ConsumerWidget {
                               ),
                             ],
                           ),
-                        );
+                        ));
                       },
                     );
                   },

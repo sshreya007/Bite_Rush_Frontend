@@ -11,4 +11,6 @@ abstract class OrderRepository {
   });
 
   Future<Either<Failure, OrderEntity>> getOrderById(String id);
+
+  Future<Either<Failure, List<OrderEntity>>> getMyOrders();
 }

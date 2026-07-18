@@ -34,17 +34,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
-    debugPrint('Login success: $success');
 
     if (!mounted) return;
 
     if (success) {
       Navigator.pushReplacementNamed(context, '/home');
-      // TODO: navigate to Home once it exists:
-      // Navigator.pushReplacementNamed(context, '/home');
     } else {
-      final error =
-          ref.read(authNotifierProvider).errorMessage ?? 'Login failed';
+      final error = ref.read(authNotifierProvider).errorMessage ?? 'Login failed';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(error), backgroundColor: AppColors.error),
       );
@@ -78,8 +74,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Email is required';
+                        if (value == null || value.isEmpty) return 'Email is required';
                         if (!value.contains('@')) return 'Enter a valid email';
                         return null;
                       },
@@ -91,8 +86,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       controller: _passwordController,
                       obscureText: true,
                       validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return 'Password is required';
+                        if (value == null || value.isEmpty) return 'Password is required';
                         if (value.length < 6) return 'Minimum 6 characters';
                         return null;
                       },
