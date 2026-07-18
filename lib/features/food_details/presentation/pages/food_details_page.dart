@@ -43,7 +43,16 @@ class _FoodDetailsPageState extends ConsumerState<FoodDetailsPage> {
           specialInstruction: _instructionController.text.trim(),
         );
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    // Capture these BEFORE popping — after pop() this page's own
+    // context becomes invalid, but a NavigatorState/ScaffoldMessengerState
+    // captured now stays valid since they belong to ancestor widgets
+    // that remain mounted, not to this page.
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    navigator.pop();
+
+    messenger.showSnackBar(
       SnackBar(
         content: Text('${widget.item.name} added to cart'),
         backgroundColor: AppColors.success,
@@ -51,12 +60,11 @@ class _FoodDetailsPageState extends ConsumerState<FoodDetailsPage> {
           label: 'View Cart',
           textColor: Colors.white,
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const CartPage()));
+            navigator.push(MaterialPageRoute(builder: (_) => const CartPage()));
           },
         ),
       ),
     );
-    Navigator.pop(context);
   }
 
   @override

@@ -2,10 +2,33 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_scaffold.dart';
 
-class DeliveryTrackingPage extends StatelessWidget {
+class DeliveryTrackingPage extends StatefulWidget {
   final String orderId;
 
   const DeliveryTrackingPage({super.key, required this.orderId});
+
+  @override
+  State<DeliveryTrackingPage> createState() => _DeliveryTrackingPageState();
+}
+
+class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Show the confirmation once the first frame is up — showing a
+    // SnackBar during initState directly would fail since the
+    // ScaffoldMessenger isn't attached to the tree yet at that point.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Order placed successfully!'),
+          backgroundColor: AppColors.success,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +64,6 @@ class DeliveryTrackingPage extends StatelessWidget {
                     color: Colors.grey.shade200,
                     shape: BoxShape.circle,
                   ),
-                  // Swap for the illustrated delivery-person SVG/PNG
-                  // from Figma once exported — this is a placeholder
-                  // built from a stock icon so the screen isn't empty.
                   child: const Icon(Icons.delivery_dining, size: 100, color: AppColors.logoBrown),
                 ),
               ),
