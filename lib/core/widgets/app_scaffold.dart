@@ -3,6 +3,7 @@ import '../theme/app_colors.dart';
 import 'app_bottom_nav_bar.dart';
 import '../../features/restaurant_details/presentation/pages/restaurants_list_page.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 
 /// Wraps a page's body with the app's persistent bottom nav bar and
 /// centralizes what each icon does, so individual pages don't each
@@ -49,7 +50,10 @@ class AppScaffold extends StatelessWidget {
       return;
     }
 
-    // TODO: index == 3 -> Profile page, once built. Wire it here.
+    if (index == 3) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
+      return;
+    }
   }
 
   @override

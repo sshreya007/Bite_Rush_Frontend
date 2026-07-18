@@ -28,4 +28,7 @@ class ApiConstants {
 
   static const String orders = '/orders';
   static String orderById(String id) => '/orders/$id';
+
+  static const String search = '/search';
+  static const String updateProfile = '/auth/profile';
 }
